@@ -20,43 +20,50 @@ pub fn main() -> Result<(), PdfiumError> {
 
     match Pdfium::bind_to_library(r"D:\pdf_parser\src\pdfium.dll") {
         Ok(binding) => {
-            Pdfium::new(binding)
-                .load_pdf_from_file(target_pdf, None)?
-                .pages()
-                .iter()
-                .enumerate()
-                .for_each(|(page_index, page)| {
-                    // For each page in the document, output the images on the page to separate files.
+            let instance = Pdfium::new(binding);
+            let pdf_doc = instance.load_pdf_from_file(target_pdf, None)?;
 
-                    println!("\n=============== Page {page_index} ===============");
+            println!("\n=============== Metadata ===============");
 
-                    page.objects()
-                        .iter()
-                        .enumerate()
-                        .for_each(|(object_index, object)| {
-                            if let Some(image) = object.as_image_object() {
-                                if let Ok(image) = image.get_raw_image() {
-                                    println!("Exporting image with object index {object_index} to file");
+            pdf_doc.metadata().iter().for_each(|item| {
+                println!("{:?}", item);
+            });
 
-                                    match image
-                                        .save(
-                                            format!("{outdir_name}/ImageExtra_page_{page_index}_image_{object_index}.jpg"),
-                                        ) {
-                                        Ok(_) => println!("OK."),
-                                        Err(err) => println!("Err. {}", err)
-                                    }
-                                    // match image
-                                    //     .save_with_format(
-                                    //         format!("{outdir_name}/ImageExtra_page_{page_index}_image_{object_index}.jpg"),
-                                    //         ImageFormat::Jpeg,
-                                    //     ) {
-                                    //     Ok(_) => println!("OK."),
-                                    //     Err(err) => println!("Err. {}", err)
-                                    // }
-                                }
-                            }
-                        });
-                });
+            // pdf_doc.pages()
+            //     .iter()
+            //     .enumerate()
+            //     .for_each(|(page_index, page)| {
+            //         // For each page in the document, output the images on the page to separate files.
+            //
+            //         println!("\n=============== Page {page_index} ===============");
+            //
+            //         page.objects()
+            //             .iter()
+            //             .enumerate()
+            //             .for_each(|(object_index, object)| {
+            //                 if let Some(image) = object.as_image_object() {
+            //                     if let Ok(image) = image.get_raw_image() {
+            //                         println!("Exporting image with object index {object_index} to file");
+            //
+            //                         match image
+            //                             .save(
+            //                                 format!("{outdir_name}/ImageExtra_page_{page_index}_image_{object_index}.jpg"),
+            //                             ) {
+            //                             Ok(_) => println!("OK."),
+            //                             Err(err) => println!("Err. {}", err)
+            //                         }
+            //                         // match image
+            //                         //     .save_with_format(
+            //                         //         format!("{outdir_name}/ImageExtra_page_{page_index}_image_{object_index}.jpg"),
+            //                         //         ImageFormat::Jpeg,
+            //                         //     ) {
+            //                         //     Ok(_) => println!("OK."),
+            //                         //     Err(err) => println!("Err. {}", err)
+            //                         // }
+            //                     }
+            //                 }
+            //             });
+            //     });
         }
         Err(err) => {
             println!("failed to binding!\n{}", err);
